@@ -10,9 +10,12 @@ To use it, install python-bitbucket, PyGithub and ipdb.
 
 Then run it from the command line.
 
-Caution: Be prepared for errors. Try it out on a fresh repo which you can easily kill again.
+Caution: Be prepared for errors. Try it out on a fresh repo which you can
+easily kill again.
 
-Hint: If you want to migrate all issues, it's a wise choice to start with a GitHub repo without any issues and actually migrate all issues. That way, number references in code and other issues will be kept functional.
+Hint: If you want to migrate all issues, it's a wise choice to start with a
+GitHub repo without any issues and actually migrate all issues. That way,
+number references in code and other issues will be kept functional.
 """
 
 BB_USER = u'from_user'
