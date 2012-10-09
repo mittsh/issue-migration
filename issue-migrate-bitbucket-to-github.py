@@ -10,6 +10,10 @@ To use it, install python-bitbucket, PyGithub and ipdb.
 
 Then run it from the command line.
 
+Note: If I were to do a migration again, I'd modify the script to make the
+import note a comment instead of a part of the description, and I'd run the
+migration as a dedicated 'migrationbot' user.
+
 Caution: Be prepared for errors. Try it out on a fresh repo which you can
 easily kill again.
 
