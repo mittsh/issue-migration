@@ -7,7 +7,7 @@ from issue import Issue
 # import log levels
 from migrate import LOG_LEVEL_SILENT, LOG_LEVEL_ERRORS, LOG_LEVEL_WARN, LOG_LEVEL_INFO, LOG_LEVEL_DEBUG
 
-def get_issues_from_bitbucket(from_user, from_repo, from_password=None, log_level=LOG_LEVEL_ERRORS, fetch_limit=50, stop_at_index=None, start=0):
+def fetch_issues_from_bitbucket(from_user, from_repo, from_password=None, log_level=LOG_LEVEL_ERRORS, fetch_limit=50, stop_at_index=None, start=0):
 	'''
 	Loads all issues form a Bitbucket repository, and returns a list of Issue objects.
 	'''
@@ -67,7 +67,7 @@ def get_issues_from_bitbucket(from_user, from_repo, from_password=None, log_leve
 				if log_level >= LOG_LEVEL_DEBUG:
 					print(issue.__unicode__())
 				elif log_level >= LOG_LEVEL_INFO:
-					print('Issue ID {id}: {title} ({count} comments)'.format(id=bb_issue['local_id'], title=issue.title, count=len(issue.comments)))
+					print('Issue ID {id}: {title} ({count} comment(s))'.format(id=bb_issue['local_id'], title=issue.title, count=len(issue.comments)))
 
 			except Exception, e:
 				print(u'Cannot create issue ID: {0}'.format(bb_issue.get('local_id')))

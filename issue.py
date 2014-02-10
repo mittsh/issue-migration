@@ -98,15 +98,12 @@ class Issue(object):
 		Formats the Issue body to adapt it to a platform.
 		'''
 
-		CONTENT_TEMPLATE = u'''{content}
-
-
-**Note**: This issue has been migrated from {source} (ID: {source_issue_id}){assignee}
+		CONTENT_TEMPLATE = u'''{body}**Note**: This issue has been migrated from {source} (ID: {source_issue_id}){assignee}
 Created by **{author}** on {created_on}{updated_on}{status}
 '''
 
 		kwargs={
-			'content': self.body,
+			'body': '{body}\n\n\n'.format(content=self.body) if self.body else '',
 			'source': self.source,
 			'author':self.reported_by.format(to_platform=to_platform),
 			'created_on': self.created_on,

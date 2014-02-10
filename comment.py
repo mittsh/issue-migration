@@ -56,13 +56,11 @@ Author: {author}
 		Formats the IssueComment body to adapt it to a platform.
 		'''
 
-		CONTENT_TEMPLATE = u'''{body}
-
-**Note**: This comment has been migrated from {source} (author: **{author}**)
+		CONTENT_TEMPLATE = u'''{body}**Note**: This comment has been migrated from {source} (author: **{author}**)
 '''
 
 		return CONTENT_TEMPLATE.format(
-			body=self.body,
+			body='{body}\n\n\n'.format(body=self.body) if self.body else '',
 			author=self.author.format(to_platform=to_platform),
 			source=self.source,
 		)
