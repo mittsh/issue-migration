@@ -60,7 +60,7 @@ Author: {author}
 '''
 
 		return CONTENT_TEMPLATE.format(
-			body='{body}\n\n\n'.format(body=self.body) if self.body else '',
+			body=u'{body}\n\n\n'.format(body=self.body) if self.body else '',
 			author=self.author.format(to_platform=to_platform),
 			source=self.source,
 		)

@@ -103,7 +103,7 @@ Created by **{author}** on {created_on}{updated_on}{status}
 '''
 
 		kwargs={
-			'body': '{body}\n\n\n'.format(content=self.body) if self.body else '',
+			'body': '{body}\n\n\n'.format(body=self.body) if self.body else '',
 			'source': self.source,
 			'author':self.reported_by.format(to_platform=to_platform),
 			'created_on': self.created_on,

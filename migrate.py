@@ -24,11 +24,14 @@ if __name__ == '__main__':
 	from_repo = (not config.INPUT and config.BB_REPO) or raw_input(u'[From] Bitbucket Repo ({0}): '.format(config.BB_REPO)) or config.BB_REPO
 
 	to_user = (not config.INPUT and config.GH_USER) or raw_input(u'[To] Github Username ({0}): '.format(config.GH_USER)) or config.GH_USER
+	to_password = getpass.getpass(u'[To] Github Password (protected, leave empty for none): ')
 	to_repo = (not config.INPUT and config.GH_REPO) or raw_input(u'[To] Github Repo ({0}): '.format(config.GH_REPO)) or config.GH_REPO
 
-	issues = fetch_issues_from_bitbucket(from_user=from_user, from_repo=from_repo, from_password=from_password, log_level=LOG_LEVEL_INFO, fetch_limit=1, stop_at_index = 1)
+	log_level = LOG_LEVEL_DEBUG
+
+	issues = fetch_issues_from_bitbucket(from_user=from_user, from_repo=from_repo, from_password=from_password, log_level=LOG_LEVEL_INFO)
 	
 	# print(u'\n==========\n\n\n'.join([issue.format(to_platform=PLATFORM_GH) + 'Comments:\n' + '\n----------\n'.join([comment.format(to_platform=PLATFORM_GH) for comment in issue.comments]) for issue in issues]))
 	
-	gh_migration = GithubMigration(username=to_user, repo=to_repo, access_token=config.GH_TOKEN)
-	gh_migration.push_issues_to_github(issues, log_level=LOG_LEVEL_DEBUG)
+	gh_migration = GithubMigration(username=to_user, repo=to_repo, password=to_password, log_level=log_level)
+	gh_migration.push_issues_to_github(issues, log_level=log_level)

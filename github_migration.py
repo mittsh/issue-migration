@@ -9,20 +9,41 @@ from migrate import PLATFORM_GH
 
 class GithubMigration(object):
 
-	def __init__(self, username, repo, access_token):
+	def __init__(self, username, repo, access_token = None, password = None, log_level = LOG_LEVEL_ERRORS):
 
 		# Create caches
 		self.gh_users={}
 		self.gh_labels={}
 
 		# Creates the Github Connection
-		self.gh=Github(login_or_token=access_token)
+		if access_token:
+			# Connect
+			self.gh=Github(login_or_token=access_token)
+
+			# Log
+			if log_level >= LOG_LEVEL_INFO:
+				print('Connected to Github [access token auth]')
+		else:
+			# Connect
+			self.gh=Github(login_or_token=username, password=password)
+
+			# Log
+			if log_level >= LOG_LEVEL_INFO:
+				print('Connected to Github [password auth]: {username}'.format(username=username))
 
 		# Get the Repo
 		self.gh_repo=self.get_user(username).get_repo(repo)
 
+		# Log
+		if log_level >= LOG_LEVEL_DEBUG:
+			print('Fetched Repo info: {url}'.format(url=self.gh_repo.url))
+
 		# Get the Repo Labels
 		self.gh_repo_labels = dict([(l.name, l) for l in list(self.gh_repo.get_labels())])
+
+		# Log
+		if log_level >= LOG_LEVEL_DEBUG:
+			print('Fetched labels: {labels}'.format(labels=', '.join(self.gh_repo_labels.keys())))
 
 	def get_user(self, username):
 		if username not in self.gh_users:
@@ -87,7 +108,7 @@ class GithubMigration(object):
 		'''
 		Creates a new comment on Github from an IssueComment object
 		'''
-		
+
 		# Push
 		gh_comment = gh_issue.create_comment(body=comment.format(to_platform=PLATFORM_GH))
 
