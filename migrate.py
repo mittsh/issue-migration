@@ -1,10 +1,15 @@
 #!/usr/bin/env python
 
+# Log Level
 LOG_LEVEL_SILENT = 0
 LOG_LEVEL_ERRORS = 1
 LOG_LEVEL_WARN = 2
 LOG_LEVEL_INFO = 2
 LOG_LEVEL_DEBUG = 3
+
+# Platform
+PLATFORM_GH = 'Github'
+PLATFORM_BB = 'Bitbucket'
 
 def get_gh_user(username):
 	if username not in _gh_users:
@@ -28,7 +33,7 @@ if __name__ == '__main__':
 
 	import getpass
 	import config
-	
+
 	from bitbucket_migration import get_issues_from_bitbucket
 
 	from_user = (not config.INPUT and config.BB_USER) or raw_input(u'[From] Bitbucket Username ({0}): '.format(config.BB_USER)) or config.BB_USER
@@ -38,5 +43,5 @@ if __name__ == '__main__':
 	to_user = (not config.INPUT and config.GH_USER) or raw_input(u'[To] Github Username ({0}): '.format(config.GH_USER)) or config.GH_USER
 	to_repo = (not config.INPUT and config.GH_REPO) or raw_input(u'[To] Github Repo ({0}): '.format(config.GH_REPO)) or config.GH_REPO
 
-	issues = get_issues_from_bitbucket(from_user=from_user, from_repo=from_repo, from_password=from_password, log_level = LOG_LEVEL_INFO)
-	
+	issues = get_issues_from_bitbucket(from_user=from_user, from_repo=from_repo, from_password=from_password, log_level=LOG_LEVEL_DEBUG, fetch_limit=10)
+

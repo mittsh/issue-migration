@@ -1,6 +1,10 @@
-# 
+from user import User
+from comment import IssueComment
+from migrate import PLATFORM_GH, PLATFORM_BB
+
+#
 # Issue
-# 
+#
 
 class Issue(object):
 	'''
@@ -16,8 +20,16 @@ class Issue(object):
 		self.assignee = None
 		self.closed = False
 		self.labels = set()
-		self.comments = []
+		self.comments = [] # a list of IssueComment objects
+		self.source = None # source of the Issue (Github or Bitbucket)
+		self.source_issue_id = None # issue id at the source
+		self.created_on = None
+		self.updated_on = None
 
+		# Bitbucket Payload
+		self.bb_issue = None
+
+		# If Bitbucket payload is passed
 		if bb_issue_and_comments:
 			(bb_issue, bb_comments,) = bb_issue_and_comments
 			self.bb_load_issue(bb_issue)
@@ -28,10 +40,19 @@ class Issue(object):
 		Loads issue from a Bitbucket response.
 		'''
 
+		# save bitbucket payload
+		self.bb_issue = bb_issue
+
+		# source
+		self.source = PLATFORM_BB
+
+		# source issue id
+		self.source_issue_id = bb_issue['local_id']
+
 		# status: new, open, resolved, on hold
 		if bb_issue['status'] == u'resolved':
 			self.closed = True
-		
+
 		# title
 		self.title = bb_issue[u'title']
 
@@ -40,37 +61,75 @@ class Issue(object):
 
 		# metadata.kind: bug, enhancement, proposal, task
 		self.labels.add(u'type-%s' % bb_issue[u'metadata'][u'kind'])
-		
+
 		# metadata.component
 		if bb_issue[u'metadata'][u'component'] is not None:
 			self.labels.add(u'component-%s' % bb_issue[u'metadata'][u'component'])
-		
+
 		# assignee
 		if u'responsible' in bb_issue:
-			self.assignee = USER_MAP[bb_issue[u'responsible'][u'username']]
+			self.assignee = User(bb_username=bb_issue[u'responsible'][u'username'])
 
 		# reported_by
 		if u'reported_by' in bb_issue:
-			self.reported_by = bb_issue[u'reported_by'][u'username']
+			self.reported_by = User(bb_username=bb_issue[u'reported_by'][u'username'])
 
-		self.body = bb_migration_issue_body(bb_issue)
+		# created_on
+		self.created_on = bb_issue['utc_created_on']
+
+		# updated_on
+		self.updated_on = bb_issue['utc_last_updated']
+
+		# body
+		self.body = bb_issue['content']
 
 	def bb_load_comments(self, bb_comments):
 		'''
 		Loads comments from a Bitbucket response.
 		'''
-		
+
 		for bb_comment in bb_comments:
 			if bb_comment[u'content'] is not None:
-				body = bb_migration_comment_body(bb_comment)
-				self.comments.append(body)
+				comment = IssueComment(bb_comment=bb_comment)
+				self.comments.append(comment)
+
+	def format(self, to_platform=None):
+		'''
+		Formats the Issue body to adapt it to a platform.
+		'''
+
+		CONTENT_TEMPLATE = u'''{content}
+
+
+**Note**: This issue has been migrated from {source}
+{source} issue ID: {source_issue_id}{assignee}
+Created by **{author}** on {created_on} last updated {updated_on}{status}
+'''
+
+		kwargs={
+			'content': self.body,
+			'source': self.source,
+			'author':self.reported_by.format(to_platform=to_platform),
+			'created_on': self.created_on,
+			'updated_on': self.updated_on,
+			'source_issue_id': source_issue_id,
+			'status': '',
+			'assignee': '',
+		}
+
+		if self.assignee:
+			kwargs['assignee'] = self.assignee.format(to_platform=to_platform)
+
+		if self.source == PLATFORM_BB:
+			kwargs['status'] = u' status **{status}**'.format(status=self.bb_issue['status'])
+
+		return CONTENT_TEMPLATE.format(**kwargs)
+
 
 	def __unicode__(self):
-		'''
-		Returns formatted issue and comments.
-		'''
-		
-		ISSUE_FORMAT = u'''Title: {title}
+
+		ISSUE_FORMAT = u'''Issue ID: {source_issue_id} ({source})
+Title: {title}
 Reported By: {reported_by}
 Assignee: {assignee}
 Status: {status}
@@ -80,80 +139,13 @@ Labels: {labels}
 {comments}
 '''
 		return ISSUE_FORMAT.format(
+			source_issue_id=self.source_issue_id,
+			source=self.source,
 			title=self.title,
-			reported_by=self.reported_by,
-			assignee=self.assignee,
+			reported_by=self.reported_by.__unicode__() if self.reported_by else u'None',
+			assignee=self.assignee.__unicode__() if self.assignee else u'None',
 			status=u'Closed' if self.closed else u'Open',
 			labels=u', '.join(self.labels),
 			body=self.body,
-			comments=u'\n\n'.join(self.comments)
+			comments=u'\n\n'.join([comment.__unicode__() for comment in self.comments]),
 		)
-
-	def gh_create(self):
-
-		kwargs = {}
-
-		if self.body is not None:
-			kwargs[u'body'] = self.body
-
-		if self.assignee is not None:
-			kwargs[u'assignee'] = get_gh_user(self.assignee)
-
-		kwargs[u'labels'] = map(get_gh_label, self.labels)
-
-		issue = gh_repo.create_issue(self.title, **kwargs)
-
-		for comment in self.comments:
-			issue.create_comment(comment)
-
-		if self.closed:
-			issue.edit(state=u'closed')
-
-		print u'Created issue "%s" - %s' % (self.title, issue.html_url)
-
-		return issue
-
-# 
-# Migration from Bitbucket
-# 
-
-def bb_format_author(bb_username):
-	if bb_username is None:
-		author = u'Anonymous'
-	elif bb_username in USER_MAP:
-		author = u'@%s' % USER_MAP[bb_username]
-	else:
-		author = u'[%s](https://bitbucket.org/%s)' % (2 * (bb_username,))
-		
-	return author
-
-def bb_migration_issue_body(issue):
-
-	CONTENT_TEMPLATE = u'''{content}
-
-
-**Note**: This issue has been migrated from Bitbucket
-Bitbucket issue ID: {bb_issue_id}
-Created by **{author}** on {utc_created_on} last updated {utc_last_updated} status **{status}**
-'''
-
-	return CONTENT_TEMPLATE.format(
-		content=issue['content'],
-		author=bb_format_author(issue['reported_by']['username']),
-		utc_created_on=issue['utc_created_on'],
-		utc_last_updated=issue['utc_last_updated'],
-		bb_issue_id=issue['local_id'],
-		status=issue['status']
-	)
-
-def bb_migration_comment_body(comment):
-
-	CONTENT_TEMPLATE = u'''{content}
-
-**Note**: This comment has been migrated from Bitbucket (author: **{author}**)
-'''
-
-	return CONTENT_TEMPLATE.format(
-		content=comment['content'],
-		author=bb_format_author(comment['author_info']['username']),
-	)

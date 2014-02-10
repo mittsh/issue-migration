@@ -18,6 +18,11 @@ curl -u 'username' -d '{"scopes":["repo"],"note":"Migration"}' \
 
 Just replace `username` by your username, `repo` shouldn't be replaced.
 
+###Todo
+
+* Implement a CLI
+* Implement to Bitbucket migration
+
 ###Credits
 
 Created from Gist: https://gist.github.com/nidico/3778347 by [@nidico](https://github.com/nidico)
