@@ -51,7 +51,7 @@ Author: {author}
 			body=self.body,
 		)
 
-	def format(self, to_platform = None):
+	def format(self, to_platform=None):
 		'''
 		Formats the IssueComment body to adapt it to a platform.
 		'''
@@ -63,5 +63,6 @@ Author: {author}
 
 		return CONTENT_TEMPLATE.format(
 			body=self.body,
-			author=User(bb_username=comment['author_info']['username']).format(to_platform=to_platform),
+			author=self.author.format(to_platform=to_platform),
+			source=self.source,
 		)

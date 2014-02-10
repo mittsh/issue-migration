@@ -38,10 +38,26 @@ class User(object):
 		return self.format()
 
 	def format(self, to_platform = None):
-		if to_platform == PLATFORM_BB:
-			return self.bb_username or (self.gh_username and u'https://github.com/{0}'.format(self.gh_username)) or self.common_name
-		elif to_platform == PLATFORM_GH:
-			return self.gh_username or (self.bb_username and u'https://bitbucket.org/{0}'.format(self.bb_username)) or self.common_name
+		
+		# To Github
+		if to_platform == PLATFORM_GH:
+			if self.gh_username:
+				return u'@{username}'.format(username=self.gh_username)
+			elif self.bb_username:
+				return u'[{username} (Bitbucket)](https://bitbucket.org/{username})'.format(username=self.bb_username)
+			else:
+				return self.common_name
+		
+		# To Bitbucket
+		elif to_platform == PLATFORM_BB:
+			if self.bb_username:
+				return u'[@{username}](https://bitbucket.org/{username})'.format(username=self.bb_username)
+			elif self.gh_username:
+				return u'[{username} (Github)](https://github.com/{username})'.format(username=self.gh_username)
+			else:
+				return self.common_name
+		
+		# Generic
 		else:
 			if self.source == PLATFORM_GH and self.gh_username:
 				return u'{0} (Github)'.format(self.gh_username)

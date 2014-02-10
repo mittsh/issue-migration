@@ -101,9 +101,8 @@ class Issue(object):
 		CONTENT_TEMPLATE = u'''{content}
 
 
-**Note**: This issue has been migrated from {source}
-{source} issue ID: {source_issue_id}{assignee}
-Created by **{author}** on {created_on} last updated {updated_on}{status}
+**Note**: This issue has been migrated from {source} (ID: {source_issue_id}){assignee}
+Created by **{author}** on {created_on}{updated_on}{status}
 '''
 
 		kwargs={
@@ -111,17 +110,20 @@ Created by **{author}** on {created_on} last updated {updated_on}{status}
 			'source': self.source,
 			'author':self.reported_by.format(to_platform=to_platform),
 			'created_on': self.created_on,
-			'updated_on': self.updated_on,
-			'source_issue_id': source_issue_id,
+			'updated_on': '',
+			'source_issue_id': self.source_issue_id,
 			'status': '',
 			'assignee': '',
 		}
+		
+		if self.updated_on != self.created_on:
+			kwargs['updated_on'] = u'\nLast updated on {updated_on}'.format(updated_on=self.updated_on)
 
 		if self.assignee:
-			kwargs['assignee'] = self.assignee.format(to_platform=to_platform)
+			kwargs['assignee'] = u'\nAssigned to **{assignee}**'.format(assignee=self.assignee.format(to_platform=to_platform))
 
 		if self.source == PLATFORM_BB:
-			kwargs['status'] = u' status **{status}**'.format(status=self.bb_issue['status'])
+			kwargs['status'] = u'\nStatus **{status}**'.format(status=self.bb_issue['status'])
 
 		return CONTENT_TEMPLATE.format(**kwargs)
 

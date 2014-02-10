@@ -7,7 +7,7 @@ from issue import Issue
 # import log levels
 from migrate import LOG_LEVEL_SILENT, LOG_LEVEL_ERRORS, LOG_LEVEL_WARN, LOG_LEVEL_INFO, LOG_LEVEL_DEBUG
 
-def get_issues_from_bitbucket(from_user, from_repo, from_password = None, log_level = LOG_LEVEL_ERRORS, fetch_limit = 50):
+def get_issues_from_bitbucket(from_user, from_repo, from_password=None, log_level=LOG_LEVEL_ERRORS, fetch_limit=50, stop_at_index=None, start=0):
 	'''
 	Loads all issues form a Bitbucket repository, and returns a list of Issue objects.
 	'''
@@ -30,7 +30,6 @@ def get_issues_from_bitbucket(from_user, from_repo, from_password = None, log_le
 		print(u'Connected to Bitbucket Repository: {owner}/{slug} ({name})'.format(owner=bb_repo.get('owner'), slug=bb_repo.get('slug'), name=bb_repo.get('name')))
 
 	# Iterate until we fetch all the issues
-	start=0
 	while True:
 
 		# Load issues
@@ -61,7 +60,7 @@ def get_issues_from_bitbucket(from_user, from_repo, from_password = None, log_le
 				# Create Issue
 				issue = Issue(bb_issue_and_comments = (bb_issue, bb_comments,))
 
-				# Store issue
+				# Append issue
 				issues.append(issue)
 
 				# Log
@@ -78,5 +77,7 @@ def get_issues_from_bitbucket(from_user, from_repo, from_password = None, log_le
 		start += len(bb_all_issues['issues'])
 
 		# Break when all is loaded
-		if start >= bb_all_issues['count']:
+		if start >= bb_all_issues['count'] or (stop_at_index and start >= stop_at_index):
 			break
+	
+	return issues
