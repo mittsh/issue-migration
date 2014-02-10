@@ -1,3 +1,13 @@
+##Warning!
+
+**This is currently a work in progress. No CLI are currently available. Feel free to play with this code using the `migrate.py` file and change settings in `config.py`. Only Bitbucket to Github works.**
+
+###Features
+
+* Migrates Issues and Comments from Bitbucket to Github and from Github to Bitbucket. (**Warning:** for now, only Bitbucket to Github is implemented, but all is designed to make it happen – feel free to fork and pull request if you're inspired :) )
+* Bitbucket *priority*, *kind* and *component* are converted to Github labels
+* Context infos are added to *Issues* and *Comments*
+
 ###Install
 
 Install dependencies with pip:
