@@ -112,7 +112,7 @@ Created by **{author}** on {created_on}{updated_on}{status}
 			'status': '',
 			'assignee': '',
 		}
-		
+
 		if self.updated_on != self.created_on:
 			kwargs['updated_on'] = u'\nLast updated on {updated_on}'.format(updated_on=self.updated_on)
 

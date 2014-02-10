@@ -22,6 +22,8 @@ Just replace `username` by your username, `repo` shouldn't be replaced.
 
 * Implement a CLI
 * Implement to Bitbucket migration
+* Do not transform Bitbucket priority and kind to labels
+* Create specific colors for Github labels depending on priority
 
 ###Credits
 

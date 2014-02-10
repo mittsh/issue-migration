@@ -5,7 +5,7 @@ from github import Github
 from migrate import LOG_LEVEL_SILENT, LOG_LEVEL_ERRORS, LOG_LEVEL_WARN, LOG_LEVEL_INFO, LOG_LEVEL_DEBUG
 
 # platforms
-from migrate import PLATFORM_GH, PLATFORM_BB
+from migrate import PLATFORM_GH
 
 class GithubMigration(object):
 
@@ -39,29 +39,61 @@ class GithubMigration(object):
 		Creates a new issue on Github from a Issue object.
 		'''
 
+		# Log
+		if log_level >= LOG_LEVEL_DEBUG:
+			print(u'Pushing issue ({title}) to Github...'.format(title=issue.title))
+
+		# Making args
 		kwargs = {
 			'title':issue.title,
 		}
 
 		if issue.body is not None:
-			kwargs[u'body'] = issue.format(to_platform=PLATFORM_GH)
+			kwargs['body'] = issue.format(to_platform=PLATFORM_GH)
 
 		if issue.assignee is not None:
-			kwargs[u'assignee'] = self.get_user(issue.assignee.gh_username)
+			kwargs['assignee'] = self.get_user(issue.assignee.gh_username)
 
-		kwargs[u'labels'] = map(lambda label: self.get_label(label), issue.labels)
+		kwargs['labels'] = map(lambda label: self.get_label(label), issue.labels)
 
-		issue = self.gh_repo.create_issue(**kwargs)
+		# Push issue
+		gh_issue = self.gh_repo.create_issue(**kwargs)
 
+		# Log
+		if log_level >= LOG_LEVEL_INFO:
+			print(u'..Pushed issue to Github: #{number} {title}'.format(number=gh_issue.number, title=gh_issue.title))
+
+		# Push comments
 		for comment in issue.comments:
-			issue.create_comment(comment)
+			self.push_comment_to_github(gh_issue, comment, log_level=log_level)
 
+		# Close issue
 		if issue.closed:
-			issue.edit(state=u'closed')
 
-		print u'Created issue "%s" - %s' % (issue.title, issue.html_url)
+			# Close
+			gh_issue.edit(state=u'closed')
 
-		return issue
+			# Log
+			if log_level >= LOG_LEVEL_DEBUG:
+				print(u'..Closed issue')
+
+		# Log
+		if log_level >= LOG_LEVEL_DEBUG:
+			print(u'..Finished to push issue and its comments to Github: #{number} {title}'.format(number=gh_issue.number, title=gh_issue.title))
+		elif log_level >= LOG_LEVEL_INFO:
+			print(u'Pushed issue and its comments to Github: #{number} {title}'.format(number=gh_issue.number, title=gh_issue.title))
+
+	def push_comment_to_github(self, gh_issue, comment, log_level=LOG_LEVEL_ERRORS):
+		'''
+		Creates a new comment on Github from an IssueComment object
+		'''
+		
+		# Push
+		gh_comment = gh_issue.create_comment(body=comment.format(to_platform=PLATFORM_GH))
+
+		# Log
+		if log_level >= LOG_LEVEL_DEBUG:
+			print(u'..Pushed comment ({id}) to Github...'.format(id=gh_comment.id))
 
 	def push_issues_to_github(self, issues, log_level=LOG_LEVEL_ERRORS):
 		'''

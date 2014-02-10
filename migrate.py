@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
 	issues = fetch_issues_from_bitbucket(from_user=from_user, from_repo=from_repo, from_password=from_password, log_level=LOG_LEVEL_INFO, fetch_limit=1, stop_at_index = 1)
 	
-	print(u'\n==========\n\n\n'.join([issue.format(to_platform=PLATFORM_GH) + 'Comments:\n' + '\n----------\n'.join([comment.format(to_platform=PLATFORM_GH) for comment in issue.comments]) for issue in issues]))
+	# print(u'\n==========\n\n\n'.join([issue.format(to_platform=PLATFORM_GH) + 'Comments:\n' + '\n----------\n'.join([comment.format(to_platform=PLATFORM_GH) for comment in issue.comments]) for issue in issues]))
 	
 	gh_migration = GithubMigration(username=to_user, repo=to_repo, access_token=config.GH_TOKEN)
-	gh_migration.push_issues_to_github(issues)
+	gh_migration.push_issues_to_github(issues, log_level=LOG_LEVEL_DEBUG)
