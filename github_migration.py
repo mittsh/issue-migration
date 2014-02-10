@@ -72,7 +72,7 @@ class GithubMigration(object):
 		if issue.body is not None:
 			kwargs['body'] = issue.format(to_platform=PLATFORM_GH)
 
-		if issue.assignee is not None:
+		if issue.assignee is not None and issue.assignee.gh_username is not None:
 			kwargs['assignee'] = self.get_user(issue.assignee.gh_username)
 
 		kwargs['labels'] = map(lambda label: self.get_label(label), issue.labels)
