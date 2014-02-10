@@ -1,0 +1,6 @@
+*.pyc
+.DS_Store
+build
+pic/loads.py
+pic/my_super_missions.json
+*.tmproj
